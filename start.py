@@ -1,4 +1,6 @@
 import tkinter as tk
+from tkinter import *
+from tkinter import ttk
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -19,56 +21,53 @@ with open('Dataset/20200118/310/summary.csv','r') as csvfile:
         x.append(row[0])
         y.append((row[6]))
 
-plt.plot(x, y, color = 'g', label = "data")
-plt.legend()
+# plt.plot(x, y, color = 'g', label = "data")
+# plt.legend()
 # plt.show()
 
 
 def plot():
-    # the figure that will contain the plot
-    fig = Figure(figsize = (5, 5),
-                 dpi = 100)
-  
-    # list of squares
-    y = [i**2 for i in range(101)]
-  
+    fig = Figure(figsize = (5, 5), dpi = 100)
     # adding the subplot
     plot1 = fig.add_subplot(111)
-  
     # plotting the graph
-    plot1.plot(y)
+    plot1.plot(x,y)
   
     # creating the Tkinter canvas
     # containing the Matplotlib figure
-    canvas = FigureCanvasTkAgg(fig,
-                               master = window)  
+    canvas = FigureCanvasTkAgg(fig, master = window)  
     canvas.draw()
-  
-    # placing the canvas on the Tkinter window
     canvas.get_tk_widget().pack()
   
+    # !!!Not Working!!!
     # creating the Matplotlib toolbar
-    toolbar = NavigationToolbar2Tk(canvas,
-                                   window)
-    toolbar.update()
-  
-    # placing the toolbar on the Tkinter window
-    canvas.get_tk_widget().pack()
+    # toolbar = NavigationToolbar2Tk(canvas, window)
+    # toolbar.update()
+    # canvas.get_tk_widget().pack()
 
+def chart():
+    canvas = Canvas(master = window)
+    canvas.create_text(500, 250, text=df, fill="black", font=('Helvetica 15 bold'))
+    canvas.pack()
 
+# Tkinter Window
 window = tk.Tk()
 window.title = 'Charts'
-window.geometry('500x500')
-# toplevel = tk.Toplevel(window)
-# toplevel.title = 'Top Level'
+window.geometry('1250x1000')
+
+# Plot Graph Button
 plot_button = tk.Button(master = window, command = plot, height = 2, width = 10, text = 'plot')
 plot_button.pack()
 
+# Plot Chart Button
+chart_button = tk.Button(master = window, command = chart, height = 2, width = 10, text = 'chart')
+chart_button.pack()
 
+# Open tkinter window
 window.mainloop()
 
+
+# Test prints
 print("Hello World") 
 print(pd.__version__)
 # print(plt.__version__)
-
-###test###
