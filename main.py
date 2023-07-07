@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
+from tkinter import filedialog as fd
+from tkinter.messagebox import showinfo
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -15,11 +17,26 @@ print(df.head(10))
 x = []
 y = []
 
-with open('Dataset/20200118/310/summary.csv','r') as csvfile:
+with open('Dataset/20200118/310/summary.csv', 'r') as csvfile:
     lines = csv.reader(csvfile, delimiter=',')
     for row in lines:
         x.append(row[0])
         y.append((row[6]))
+
+
+def select_file():
+    filetypes = (
+        ('text files', '*.txt'),
+        ('All files', '*.*')
+    )
+    filename = fd.askopenfilename(
+        title='Open a file',
+        initialdir='/',
+        filetypes=filetypes)
+    # showinfo(
+    #     title='Selected File',
+    #     message=filename
+    # )
 
 
 class Graphy(tk.Tk):
@@ -43,15 +60,13 @@ class Graphy(tk.Tk):
         frame = self.frames[container]
         frame.tkraise()
 
-    
-
 
 class Graph(ttk.Frame):
     def __init__(self, container, controller):
         super().__init__(container)
 
         frame = LabelFrame(self, padx=50, pady=50)
-        frame.pack(padx=10, pady=10)
+        frame.grid(padx=10, pady=10)
 
         def plot():
             fig = Figure(figsize = (5, 5), dpi = 100)
@@ -66,7 +81,6 @@ class Graph(ttk.Frame):
             canvas.draw()
             canvas.get_tk_widget().grid(row=1, sticky="EW")
 
-  
             # !!!Not Working!!!
             # creating the Matplotlib toolbar
             # toolbar = NavigationToolbar2Tk(canvas, window)
@@ -75,9 +89,12 @@ class Graph(ttk.Frame):
 
         plot_button = Button(frame, text="Graph", command = plot, height = 2, width = 10)
         plot_button.grid(row=0, column=0)
-        swap_button = Button(frame, text="Swap", height=2, width=10,
-                             command=lambda: controller.show_frame("Chart"))
-        swap_button.grid(row=0, column=1)
+        switch_page_button = Button(
+            self,
+            text="Switch to Chart",
+            command=lambda: controller.show_frame(Chart)
+        )
+        switch_page_button.grid(column=0, row=1, columnspan=2, sticky="EW")
 
 
 class Chart(ttk.Frame):
@@ -85,10 +102,16 @@ class Chart(ttk.Frame):
         super().__init__(container)
 
         frame = LabelFrame(self, padx=50, pady=50)
-        frame.pack(padx=10, pady=10)
+        frame.grid(padx=10, pady=10)
 
         b = Button(frame, text="Chart")
         b.grid(row=0, column=0)
+        switch_page_button = Button(
+            self,
+            text="Switch to Graph",
+            command=lambda: controller.show_frame(Graph)
+        )
+        switch_page_button.grid(column=0, row=1, columnspan=2, sticky="EW")
 
 
 root = Graphy()
