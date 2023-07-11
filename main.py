@@ -6,8 +6,8 @@ from tkinter.messagebox import showinfo
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
-NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backend_tools import ToolBase, ToolToggleBase
 import csv
 import numpy as np
 import torch
@@ -30,6 +30,7 @@ On = []
 
 with open('Dataset/20200118/310/summary.csv', 'r') as csvfile:
     lines = csv.reader(csvfile, delimiter=',')
+    next(lines)
     for row in lines:
         x.append(row[0])
         y.append(row[6])
@@ -88,25 +89,28 @@ class Graph(ttk.Frame):
         frame.grid(padx=10, pady=10, sticky="NSEW")
 
         def plot():
+            print(value_inside.get())
             fig = Figure(figsize=(5, 5), dpi=100)
             # adding the subplots
             plot1 = fig.add_subplot(111)
             # plotting the graph
-            plot1.plot(x, y)
+            plot1.plot(Date, Mvmt)
+            plot1.set_ylim(0, 50)
+            plot1.set_xlim(Mvmt[0], Mvmt[10])
             # creating the Tkinter canvas
             # containing the Matplotlib figure
             canvas = FigureCanvasTkAgg(fig, frame)
             # canvas.draw()
-            canvas.get_tk_widget().grid(row=1, sticky="EW")
-
-            # !!!Not Working!!!
-            # creating the Matplotlib toolbar
-            # toolbar = NavigationToolbar2Tk(canvas, window)
-            # toolbar.update()
-            # canvas.get_tk_widget().pack()
+            canvas.get_tk_widget().grid(row=1, columnspan=2, sticky="EW")
 
         plot_button = Button(frame, text="Graph", command=plot, height=2, width=10)
         plot_button.grid(row=0, column=0)
+
+        value_inside = StringVar(frame)
+        value_inside.set(Date[0])
+        drop = OptionMenu(frame, value_inside, *Date)
+        drop.grid(row=0, column=1)
+
         switch_page_button = Button(
             self,
             text="Switch to Chart",
