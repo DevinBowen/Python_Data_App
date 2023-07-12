@@ -64,6 +64,8 @@ class Graphy(tk.Tk):
         super().__init__(*args, **kwargs)
 
         self.title("Graphy")
+        self.geometry("800x500")
+        self.minsize(800, 500)
         self.frames = dict()
 
         container = LabelFrame(self, bg='blue', bd=2)
@@ -137,5 +139,5 @@ class Chart(ttk.Frame):
 
 
 root = Graphy()
-root.geometry('800x800')
+# root.geometry('800x800')
 root.mainloop()
