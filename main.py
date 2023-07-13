@@ -11,6 +11,7 @@ from matplotlib.backend_tools import ToolBase, ToolToggleBase
 import csv
 import numpy as np
 import torch
+import matplotlib.ticker as plticker
 
 df = pd.read_csv('Dataset/20200118/310/summary.csv', nrows=2)
 
@@ -64,7 +65,7 @@ class Graphy(tk.Tk):
         super().__init__(*args, **kwargs)
 
         self.title("Graphy")
-        self.geometry("800x500")
+        self.geometry("600x800")
         self.minsize(800, 500)
         self.frames = dict()
 
@@ -87,38 +88,45 @@ class Graph(ttk.Frame):
     def __init__(self, container, controller):
         super().__init__(container)
 
-        frame = LabelFrame(self, padx=50, pady=50, bg="light blue")
+        frame = Frame(self, padx=50, pady=50, bg="light blue")
+        frame.configure(height=500)
         frame.grid(padx=10, pady=10, sticky="NSEW")
 
         def plot():
-            print(value_inside.get())
+            print(value_inside_start.get())
             fig = Figure(figsize=(5, 5), dpi=100)
             # adding the subplots
             plot1 = fig.add_subplot(111)
             # plotting the graph
             plot1.plot(Date, Mvmt)
-            plot1.set_ylim(0, 50)
-            plot1.set_xlim(Mvmt[0], Mvmt[10])
+            # plot1.set_ylim(0, 50)
+            loc = plticker.MaxNLocator()
+            plot1.yaxis.set_major_locator(loc)
+            plot1.set_xlim(Mvmt[0], Mvmt[20])
             # creating the Tkinter canvas
             # containing the Matplotlib figure
             canvas = FigureCanvasTkAgg(fig, frame)
             # canvas.draw()
-            canvas.get_tk_widget().grid(row=1, columnspan=2, sticky="EW")
+            canvas.get_tk_widget().grid(row=1, columnspan=3, sticky="EW")
 
         plot_button = Button(frame, text="Graph", command=plot, height=2, width=10)
         plot_button.grid(row=0, column=0)
 
-        value_inside = StringVar(frame)
-        value_inside.set(Date[0])
-        drop = OptionMenu(frame, value_inside, *Date)
+        value_inside_start = StringVar(frame)
+        value_inside_end = StringVar(frame)
+        value_inside_start.set(Date[0])
+        value_inside_end.set(Date[20])
+        drop = OptionMenu(frame, value_inside_start, *Date)
         drop.grid(row=0, column=1)
+        drop2 = OptionMenu(frame, value_inside_end, *Date)
+        drop2.grid(row=0, column=2)
 
         switch_page_button = Button(
-            self,
+            frame,
             text="Switch to Chart",
             command=lambda: controller.show_frame(Chart)
         )
-        switch_page_button.grid(column=0, row=1, columnspan=2, sticky="EW")
+        switch_page_button.grid(column=0, row=2, columnspan=2, sticky="EW")
 
 
 class Chart(ttk.Frame):
@@ -127,6 +135,10 @@ class Chart(ttk.Frame):
 
         frame = LabelFrame(self, padx=50, pady=50)
         frame.grid(padx=10, pady=10, sticky="NSEW")
+
+        def chart():
+            plt.plot(Date, Mvmt)
+            plt.show()
 
         b = Button(frame, text="Chart")
         b.grid(row=0, column=0)
