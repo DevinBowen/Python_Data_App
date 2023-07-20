@@ -120,7 +120,11 @@ class Graph(ttk.Frame):
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
         def plot():
-            print(value_inside_start.get())
+            # print(value_inside_start.get())
+
+            df_subset = df[("Datetime (UTC)" >= value_inside_start.get()) & ("Datetime (UTC)" <= value_inside_end.get())]
+            print(df_subset)
+
             fig = Figure(figsize=(4, 3.87), dpi=100)
             plot1 = fig.add_subplot(111)
             plot1.plot(Date, Mvmt)
@@ -134,7 +138,8 @@ class Graph(ttk.Frame):
         home_button = Button(
             frame_left,
             text="Main Menu",
-            command=lambda: controller.show_frame(Front)
+            command=lambda: controller.show_frame(Front),
+            width=21
         )
         home_button.grid(column=0, row=0, columnspan=1, sticky="EW")
 
@@ -143,7 +148,7 @@ class Graph(ttk.Frame):
             text="Switch to Chart",
             command=lambda: controller.show_frame(Chart)
         )
-        switch_page_button.grid(column=0, row=1, columnspan=1, sticky="NEW")
+        switch_page_button.grid(column=0, row=1, columnspan=1, pady=5, sticky="NEW")
 
         value_inside_start = StringVar(frame_left)
         value_inside_end = StringVar(frame_left)
@@ -152,10 +157,10 @@ class Graph(ttk.Frame):
         drop = OptionMenu(frame_left, value_inside_start, *Date)
         drop.grid(row=2, column=0, sticky="NEW")
         drop2 = OptionMenu(frame_left, value_inside_end, *Date)
-        drop2.grid(row=3, column=0, sticky="NEW")
+        drop2.grid(row=3, column=0, pady=1, sticky="NEW")
 
         plot_button = Button(frame_left, text="Graph", command=plot, height=2, width=10)
-        plot_button.grid(row=4, column=0, sticky="NEW")
+        plot_button.grid(row=4, column=0, pady=5, sticky="NEW")
 
 
 class Chart(ttk.Frame):
@@ -190,7 +195,8 @@ class Chart(ttk.Frame):
         home_button = Button(
             frame_left,
             text="Main Menu",
-            command=lambda: controller.show_frame(Front)
+            command=lambda: controller.show_frame(Front),
+            width=21
         )
         home_button.grid(column=0, row=0, columnspan=1, sticky="EW")
 
@@ -199,7 +205,7 @@ class Chart(ttk.Frame):
             text="Switch to Graph",
             command=lambda: controller.show_frame(Graph)
         )
-        switch_page_button.grid(column=0, row=1, columnspan=1, sticky="EW")
+        switch_page_button.grid(column=0, row=1, columnspan=1, pady=5, sticky="EW")
 
         # value_inside_start = StringVar(frame_left)
         # value_inside_end = StringVar(frame_left)
@@ -211,12 +217,12 @@ class Chart(ttk.Frame):
         # drop2.grid(row=3, column=0)
 
         row_label = Label(frame_left, text="Number of Rows")
-        row_label.grid(row=2, column=0, sticky="NSEW")
+        row_label.grid(row=2, column=0, padx=5, pady=1, sticky="NSEW")
         row_input = Entry(frame_left, justify='center')
         row_input.grid(row=3, column=0)
 
         b = Button(frame_left, command=chart, height=2, width=10, text="Chart")
-        b.grid(row=4, column=0)
+        b.grid(row=4, column=0, pady=5)
 
 
 root = Graphy()
