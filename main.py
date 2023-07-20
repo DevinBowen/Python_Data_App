@@ -100,8 +100,11 @@ class Graph(ttk.Frame):
             # plotting the graph
             plot1.plot(Date, Mvmt)
             # plot1.set_ylim(0, 50)
-            loc = plticker.MaxNLocator()
-            plot1.yaxis.set_major_locator(loc)
+            # loc = plticker.AutoLocator()
+            # plot1.yaxis.set_major_locator(loc)
+
+            
+            # plot1.set_ticks(5)
             plot1.set_xlim(Mvmt[0], Mvmt[20])
             # creating the Tkinter canvas
             # containing the Matplotlib figure
@@ -126,7 +129,7 @@ class Graph(ttk.Frame):
             text="Switch to Chart",
             command=lambda: controller.show_frame(Chart)
         )
-        switch_page_button.grid(column=0, row=2, columnspan=2, sticky="EW")
+        switch_page_button.grid(column=1, row=2, columnspan=1, sticky="EW")
 
 
 class Chart(ttk.Frame):
