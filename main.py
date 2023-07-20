@@ -69,7 +69,7 @@ class Graphy(tk.Tk):
         # self.minsize(800, 500)
         self.frames = dict()
 
-        container = LabelFrame(self, bg='black')
+        container = LabelFrame(self, bg='light grey')
         container.grid(padx=0, pady=0, sticky="EW")
 
         for FrameClass in (Front, Graph, Chart):
@@ -88,8 +88,7 @@ class Front(ttk.Frame):
     def __init__(self, container, controller):
         super().__init__(container)
 
-        frame = Frame(self, padx=50, pady=50, bg="light blue")
-        frame.configure(height=500)
+        frame = Frame(self, padx=70, pady=78, bg="light blue")
         frame.grid(padx=10, pady=10, sticky="NSEW")
 
         title = Label(frame, text="GRAPHY MENU", pady=10, padx=10)
@@ -114,94 +113,89 @@ class Graph(ttk.Frame):
     def __init__(self, container, controller):
         super().__init__(container)
 
-        frame = Frame(self, padx=50, pady=50, bg="light blue")
-        frame.configure(height=500)
-        frame.grid(padx=10, pady=10, sticky="NSEW")
+        frame_left = Frame(self, padx=50, pady=50, bg="light blue")
+        frame_left.grid(row=0, column=0, padx=10, pady=10, sticky="NSEW")
+
+        frame_right = Frame(self, padx=50, pady=50, bg="light blue")
+        frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
         def plot():
             print(value_inside_start.get())
             fig = Figure(figsize=(5, 5), dpi=100)
-            # adding the subplots
             plot1 = fig.add_subplot(111)
-            # plotting the graph
             plot1.plot(Date, Mvmt)
-            # plot1.set_ylim(0, 50)
-            # loc = plticker.AutoLocator()
+            # loc = plticker.LogLocator(base=2)
             # plot1.yaxis.set_major_locator(loc)
-
-            
-            # plot1.set_ticks(5)
             plot1.set_xlim(Mvmt[0], Mvmt[20])
-            # creating the Tkinter canvas
-            # containing the Matplotlib figure
-            canvas = FigureCanvasTkAgg(fig, frame)
-            # canvas.draw()
-            canvas.get_tk_widget().grid(row=1, column=1, rowspan=4, columnspan=3, sticky="EW")
+            canvas = FigureCanvasTkAgg(fig, frame_right)
+            canvas.get_tk_widget().grid(row=1, column=1, rowspan=6, columnspan=1)
 
         home_button = Button(
-            frame,
+            frame_left,
             text="Main Menu",
             command=lambda: controller.show_frame(Front)
         )
         home_button.grid(column=0, row=0, columnspan=1, sticky="EW")
 
         switch_page_button = Button(
-            frame,
+            frame_left,
             text="Switch to Chart",
             command=lambda: controller.show_frame(Chart)
         )
-        switch_page_button.grid(column=0, row=1, columnspan=1, sticky="EW")
+        switch_page_button.grid(column=0, row=1, columnspan=1, sticky="NEW")
 
-        value_inside_start = StringVar(frame)
-        value_inside_end = StringVar(frame)
+        value_inside_start = StringVar(frame_left)
+        value_inside_end = StringVar(frame_left)
         value_inside_start.set(Date[0])
         value_inside_end.set(Date[20])
-        drop = OptionMenu(frame, value_inside_start, *Date)
-        drop.grid(row=2, column=0)
-        drop2 = OptionMenu(frame, value_inside_end, *Date)
-        drop2.grid(row=3, column=0)
+        drop = OptionMenu(frame_left, value_inside_start, *Date)
+        drop.grid(row=2, column=0, sticky="NEW")
+        drop2 = OptionMenu(frame_left, value_inside_end, *Date)
+        drop2.grid(row=3, column=0, sticky="NEW")
 
-        plot_button = Button(frame, text="Graph", command=plot, height=2, width=10)
-        plot_button.grid(row=4, column=0)
+        plot_button = Button(frame_left, text="Graph", command=plot, height=2, width=10)
+        plot_button.grid(row=4, column=0, sticky="NEW")
 
 
 class Chart(ttk.Frame):
     def __init__(self, container, controller):
         super().__init__(container)
 
-        frame = Frame(self, padx=50, pady=50, bg="light blue")
-        frame.configure(height=500)
-        frame.grid(padx=10, pady=10, sticky="NSEW")
+        frame_left = Frame(self, padx=50, pady=50, bg="light blue")
+        frame_left.grid(row=0, column=0, padx=10, pady=10, sticky="NSEW")
+
+        frame_right = Frame(self, padx=50, pady=50, bg="light blue")
+        frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
         def chart():
             test = StringVar(Mvmt)
-            lab = Label(frame, textvariable=test)
+            lab = Label(frame_right, textvariable=test)
             lab.grid(row=0, column=1, columnspan=1, sticky="EW")
 
         home_button = Button(
-            frame,
+            frame_left,
             text="Main Menu",
             command=lambda: controller.show_frame(Front)
         )
         home_button.grid(column=0, row=0, columnspan=1, sticky="EW")
 
         switch_page_button = Button(
-            frame,
+            frame_left,
             text="Switch to Graph",
             command=lambda: controller.show_frame(Graph)
         )
         switch_page_button.grid(column=0, row=1, columnspan=1, sticky="EW")
 
-        value_inside_start = StringVar(frame)
-        value_inside_end = StringVar(frame)
+        value_inside_start = StringVar(frame_left)
+        value_inside_end = StringVar(frame_left)
         value_inside_start.set(Date[0])
         value_inside_end.set(Date[20])
-        drop = OptionMenu(frame, value_inside_start, *Date)
+        drop = OptionMenu(frame_left, value_inside_start, *Date)
         drop.grid(row=2, column=0)
-        drop2 = OptionMenu(frame, value_inside_end, *Date)
+        drop2 = OptionMenu(frame_left, value_inside_end, *Date)
         drop2.grid(row=3, column=0)
 
-        b = Button(frame, command=chart, height=2, width=10, text="Chart")
+        b = Button(frame_left, command=chart, height=2, width=10, text="Chart")
         b.grid(row=4, column=0)
 
 
