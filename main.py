@@ -13,12 +13,14 @@ import numpy as np
 #import torch
 import matplotlib.ticker as plticker
 
-df = pd.read_csv('Dataset/20200118/310/summary.csv', nrows=2)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+df = pd.read_csv('Dataset/20200118/310/summary.csv', index_col=0)
+del df['Timezone (minutes)']
+del df['Unix Timestamp (UTC)']
 
-print(df.head(10))
+print(df.head())
 
-x = []
-y = []
 Date = []
 Acc = []
 Eda = []
@@ -33,8 +35,6 @@ with open('Dataset/20200118/310/summary.csv', 'r') as csvfile:
     lines = csv.reader(csvfile, delimiter=',')
     next(lines)
     for row in lines:
-        x.append(row[0])
-        y.append(row[6])
         Date.append(row[0])
         Acc.append(row[3])
         Eda.append(row[4])
@@ -121,14 +121,15 @@ class Graph(ttk.Frame):
 
         def plot():
             print(value_inside_start.get())
-            fig = Figure(figsize=(5, 5), dpi=100)
+            fig = Figure(figsize=(4, 3.87), dpi=100)
             plot1 = fig.add_subplot(111)
             plot1.plot(Date, Mvmt)
             # loc = plticker.LogLocator(base=2)
             # plot1.yaxis.set_major_locator(loc)
-            plot1.set_xlim(Mvmt[0], Mvmt[20])
+            # --** Here is where I am trying to filter based on date **--
+            # plot1.set_xlim(Mvmt[0], Mvmt[20])
             canvas = FigureCanvasTkAgg(fig, frame_right)
-            canvas.get_tk_widget().grid(row=1, column=1, rowspan=6, columnspan=1)
+            canvas.get_tk_widget().grid(row=1, column=1, rowspan=1, columnspan=1)
 
         home_button = Button(
             frame_left,
@@ -168,9 +169,23 @@ class Chart(ttk.Frame):
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
         def chart():
-            test = StringVar(Mvmt)
-            lab = Label(frame_right, textvariable=test)
-            lab.grid(row=0, column=1, columnspan=1, sticky="EW")
+            num_rows = int(row_input.get())
+            print(num_rows)
+
+            scroll = Scrollbar(frame_right, orient="vertical")
+            scroll.grid(row=0, column=1, rowspan=1, sticky="NS")
+            scroll_h = Scrollbar(frame_right, orient="horizontal")
+            scroll_h.grid(row=1, column=0, rowspan=1, sticky="EW")
+
+            table = Text(frame_right, wrap="none")
+            table.insert(END, str(df.head(num_rows)))
+            # with open('Dataset/20200118/310/summary.csv', "r") as f:
+            #     data = f.read()
+            #     table.insert("1.0", data)
+            table.configure(state=DISABLED, yscrollcommand=scroll.set, xscrollcommand=scroll_h.set)
+            scroll.config(command=table.yview)
+            scroll_h.config(command=table.xview)
+            table.grid(row=0, column=0, rowspan=1, columnspan=1)
 
         home_button = Button(
             frame_left,
@@ -186,14 +201,19 @@ class Chart(ttk.Frame):
         )
         switch_page_button.grid(column=0, row=1, columnspan=1, sticky="EW")
 
-        value_inside_start = StringVar(frame_left)
-        value_inside_end = StringVar(frame_left)
-        value_inside_start.set(Date[0])
-        value_inside_end.set(Date[20])
-        drop = OptionMenu(frame_left, value_inside_start, *Date)
-        drop.grid(row=2, column=0)
-        drop2 = OptionMenu(frame_left, value_inside_end, *Date)
-        drop2.grid(row=3, column=0)
+        # value_inside_start = StringVar(frame_left)
+        # value_inside_end = StringVar(frame_left)
+        # value_inside_start.set(Date[0])
+        # value_inside_end.set(Date[20])
+        # drop = OptionMenu(frame_left, value_inside_start, *Date)
+        # drop.grid(row=2, column=0)
+        # drop2 = OptionMenu(frame_left, value_inside_end, *Date)
+        # drop2.grid(row=3, column=0)
+
+        row_label = Label(frame_left, text="Number of Rows")
+        row_label.grid(row=2, column=0, sticky="NSEW")
+        row_input = Entry(frame_left, justify='center')
+        row_input.grid(row=3, column=0)
 
         b = Button(frame_left, command=chart, height=2, width=10, text="Chart")
         b.grid(row=4, column=0)
