@@ -65,12 +65,12 @@ class Graphy(tk.Tk):
         super().__init__(*args, **kwargs)
 
         self.title("Graphy")
-        self.geometry("600x800")
-        self.minsize(800, 500)
+        # self.geometry("600x800")
+        # self.minsize(800, 500)
         self.frames = dict()
 
-        container = LabelFrame(self, bg='blue', bd=2)
-        container.grid(padx=60, pady=30, sticky="EW")
+        container = LabelFrame(self, bg='black')
+        container.grid(padx=0, pady=0, sticky="EW")
 
         for FrameClass in (Front, Graph, Chart):
             frame = FrameClass(container, self)
@@ -92,12 +92,22 @@ class Front(ttk.Frame):
         frame.configure(height=500)
         frame.grid(padx=10, pady=10, sticky="NSEW")
 
-        switch_page_button = Button(
+        title = Label(frame, text="GRAPHY MENU", pady=10, padx=10)
+        title.grid(column=0, row=0, padx=5, pady=5, sticky="EW")
+
+        g_button = Button(
             frame,
-            text="Switch to Chart",
+            text="Switch to Graph",
             command=lambda: controller.show_frame(Graph)
         )
-        switch_page_button.grid(column=0, row=2, columnspan=2, sticky="EW")
+        g_button.grid(column=0, row=1, columnspan=1, sticky="EW")
+
+        c_button = Button(
+            frame,
+            text="Switch to Chart",
+            command=lambda: controller.show_frame(Chart)
+        )
+        c_button.grid(column=0, row=2, columnspan=1, sticky="EW")
 
 
 class Graph(ttk.Frame):
@@ -126,48 +136,73 @@ class Graph(ttk.Frame):
             # containing the Matplotlib figure
             canvas = FigureCanvasTkAgg(fig, frame)
             # canvas.draw()
-            canvas.get_tk_widget().grid(row=1, columnspan=3, sticky="EW")
+            canvas.get_tk_widget().grid(row=1, column=1, rowspan=4, columnspan=3, sticky="EW")
 
-        plot_button = Button(frame, text="Graph", command=plot, height=2, width=10)
-        plot_button.grid(row=0, column=0)
-
-        value_inside_start = StringVar(frame)
-        value_inside_end = StringVar(frame)
-        value_inside_start.set(Date[0])
-        value_inside_end.set(Date[20])
-        drop = OptionMenu(frame, value_inside_start, *Date)
-        drop.grid(row=0, column=1)
-        drop2 = OptionMenu(frame, value_inside_end, *Date)
-        drop2.grid(row=0, column=2)
+        home_button = Button(
+            frame,
+            text="Main Menu",
+            command=lambda: controller.show_frame(Front)
+        )
+        home_button.grid(column=0, row=0, columnspan=1, sticky="EW")
 
         switch_page_button = Button(
             frame,
             text="Switch to Chart",
             command=lambda: controller.show_frame(Chart)
         )
-        switch_page_button.grid(column=1, row=2, columnspan=1, sticky="EW")
+        switch_page_button.grid(column=0, row=1, columnspan=1, sticky="EW")
+
+        value_inside_start = StringVar(frame)
+        value_inside_end = StringVar(frame)
+        value_inside_start.set(Date[0])
+        value_inside_end.set(Date[20])
+        drop = OptionMenu(frame, value_inside_start, *Date)
+        drop.grid(row=2, column=0)
+        drop2 = OptionMenu(frame, value_inside_end, *Date)
+        drop2.grid(row=3, column=0)
+
+        plot_button = Button(frame, text="Graph", command=plot, height=2, width=10)
+        plot_button.grid(row=4, column=0)
 
 
 class Chart(ttk.Frame):
     def __init__(self, container, controller):
         super().__init__(container)
 
-        frame = LabelFrame(self, padx=50, pady=50)
+        frame = Frame(self, padx=50, pady=50, bg="light blue")
+        frame.configure(height=500)
         frame.grid(padx=10, pady=10, sticky="NSEW")
 
         def chart():
             test = StringVar(Mvmt)
             lab = Label(frame, textvariable=test)
-            lab.grid(row=1, columnspan=3, sticky="EW")
+            lab.grid(row=0, column=1, columnspan=1, sticky="EW")
 
-        b = Button(frame, command=chart, text="Chart")
-        b.grid(row=0, column=0)
+        home_button = Button(
+            frame,
+            text="Main Menu",
+            command=lambda: controller.show_frame(Front)
+        )
+        home_button.grid(column=0, row=0, columnspan=1, sticky="EW")
+
         switch_page_button = Button(
-            self,
+            frame,
             text="Switch to Graph",
             command=lambda: controller.show_frame(Graph)
         )
-        switch_page_button.grid(column=0, row=1, columnspan=2, sticky="EW")
+        switch_page_button.grid(column=0, row=1, columnspan=1, sticky="EW")
+
+        value_inside_start = StringVar(frame)
+        value_inside_end = StringVar(frame)
+        value_inside_start.set(Date[0])
+        value_inside_end.set(Date[20])
+        drop = OptionMenu(frame, value_inside_start, *Date)
+        drop.grid(row=2, column=0)
+        drop2 = OptionMenu(frame, value_inside_end, *Date)
+        drop2.grid(row=3, column=0)
+
+        b = Button(frame, command=chart, height=2, width=10, text="Chart")
+        b.grid(row=4, column=0)
 
 
 root = Graphy()
