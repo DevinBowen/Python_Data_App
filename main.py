@@ -2,18 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 from tkinter import filedialog as fd
-from tkinter.messagebox import showinfo
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.backend_tools import ToolBase, ToolToggleBase
 import csv
 import numpy as np
-#import torch
-import matplotlib.ticker as plticker
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
-NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from datetime import datetime
 import time
 import datetime
@@ -23,37 +17,11 @@ filepath = 'Dataset/20200118/310/summary.csv'
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
-# Date = []
-# Acc = []
-# Eda = []
-# Temp = []
-# Mvmt = []
-# Step = []
-# Rest = []
-# On = []
-#
-#
-# with open('Dataset/20200118/310/summary.csv', 'r') as csvfile:
-#     lines = csv.reader(csvfile, delimiter=',')
-#     next(lines)
-#     for row in lines:
-#         Date.append(row[0])
-#         Acc.append(row[3])
-#         Eda.append(row[4])
-#         Temp.append(row[5])
-#         Mvmt.append(row[6])
-#         Step.append(row[7])
-#         Rest.append(row[8])
-#         On.append(row[9])
-
-
 class Graphy(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.title("Graphy")
-        # self.geometry("600x800")
-        # self.minsize(800, 500)
         self.frames = dict()
 
         container = LabelFrame(self, bg='light grey')
@@ -105,11 +73,7 @@ class Front(ttk.Frame):
                 title='Open a file',
                 # initialdir='/',
                 filetypes=filetypes)
-            # showinfo(
-            #     title='Selected File',
-            #     message=filename
-            # )
-            print(filepath)
+            # print(filepath)
 
         change = Button(
             frame,
@@ -166,11 +130,9 @@ class Graph(ttk.Frame):
             # y = df['Eda avg']
 
             fig = Figure(figsize=(12, 6), dpi=200)
-            
             # adding the subplot
             fig, axes = plt.subplots(1, 1, figsize=(6.55, 4.3)) #add_subplots(111)
             axes.clear()  # Clears graph so there will be no overlapping.
-
             fig.autofmt_xdate()  # Formats the datetime
 
             # Aggregation
@@ -184,9 +146,6 @@ class Graph(ttk.Frame):
             else:
                 print(combo.get())
                 df.groupby(x_utc).max()['Temp avg'].plot()
-
-            # filter 0 values.
-            # df[df['Steps count'] > 0].groupby('Time').count()['Steps count'].step()
 
             # plotting the graph
             plt.setp(axes.get_xticklabels(), rotation=30, horizontalalignment='right')  # Set the alignment
@@ -212,8 +171,6 @@ class Graph(ttk.Frame):
             command=lambda: controller.show_frame(Chart)
         )
         switch_page_button.grid(column=0, row=1, columnspan=1, pady=5, sticky="NEW")
-
-        # print(df['Range'][0])
 
         value_inside_start = StringVar()
         value_inside_end = StringVar()
@@ -252,8 +209,6 @@ class Graph(ttk.Frame):
         plot_button = Button(frame_left, text="Graph", command=plot, height=2, width=10)
         plot_button.grid(row=5, column=0, pady=5, sticky="NEW")
 
-        # print(max(df['Time']))
-
 
 class Chart(ttk.Frame):
     def __init__(self, container, controller):
@@ -285,9 +240,6 @@ class Chart(ttk.Frame):
 
             table = Text(frame_right, wrap="none")
             table.insert(END, str(df.head(num_rows).to_string()))
-            # with open('Dataset/20200118/310/summary.csv', "r") as f:
-            #     data = f.read()
-            #     table.insert("1.0", data)
             table.configure(state=DISABLED, yscrollcommand=scroll.set, xscrollcommand=scroll_h.set)
             scroll.config(command=table.yview)
             scroll_h.config(command=table.xview)
@@ -307,15 +259,6 @@ class Chart(ttk.Frame):
             command=lambda: controller.show_frame(Graph)
         )
         switch_page_button.grid(column=0, row=1, columnspan=1, pady=5, sticky="EW")
-
-        # value_inside_start = StringVar(frame_left)
-        # value_inside_end = StringVar(frame_left)
-        # value_inside_start.set(Date[0])
-        # value_inside_end.set(Date[20])
-        # drop = OptionMenu(frame_left, value_inside_start, *Date)
-        # drop.grid(row=2, column=0)
-        # drop2 = OptionMenu(frame_left, value_inside_end, *Date)
-        # drop2.grid(row=3, column=0)
 
         row_label = Label(frame_left, text="Number of Rows")
         row_label.grid(row=2, column=0, padx=5, pady=1, sticky="NSEW")
