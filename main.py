@@ -12,14 +12,15 @@ import csv
 import numpy as np
 #import torch
 import matplotlib.ticker as plticker
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
+NavigationToolbar2Tk)
+from datetime import datetime
+import time
+import datetime
+
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
-df = pd.read_csv('Dataset/20200118/310/summary.csv', index_col=0)
-del df['Timezone (minutes)']
-del df['Unix Timestamp (UTC)']
-
-print(df.head())
 
 Date = []
 Acc = []
@@ -119,21 +120,77 @@ class Graph(ttk.Frame):
         frame_right = Frame(self, padx=50, pady=50, bg="light blue")
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
+        df = pd.read_csv('Dataset/20200118/310/summary.csv')
+        del df['Timezone (minutes)']
+        del df['Unix Timestamp (UTC)']
+
+        df["Datetime (UTC)"].head(5)
+
+        df['Date'] = pd.to_datetime(df['Datetime (UTC)'], format='%Y-%m-%dT%Xz')
+        df['Date'].dt.time
+        df['Time'] = df['Date'].dt.time
+        df['Month'] = df['Date'].dt.month
+        df['Time'] = df['Time'].astype(str)
+        x = df['Date']
+        y = df['Eda avg']
+
+        # def plot():
+        #     # print(value_inside_start.get())
+
+        #     # df_subset = df[("Datetime (UTC)" >= value_inside_start.get()) & ("Datetime (UTC)" <= value_inside_end.get())]
+        #     # print(df_subset)
+
+        #     fig = Figure(figsize=(4, 3.87), dpi=100)
+        #     plot1 = fig.add_subplot(111)
+        #     plot1.plot(Date, Mvmt)
+        #     # loc = plticker.LogLocator(base=2)
+        #     # plot1.yaxis.set_major_locator(loc)
+        #     # --** Here is where I am trying to filter based on date **--
+        #     # plot1.set_xlim(Mvmt[0], Mvmt[20])
+        #     canvas = FigureCanvasTkAgg(fig, frame_right)
+        #     canvas.get_tk_widget().grid(row=1, column=1, rowspan=1, columnspan=1)
+
         def plot():
-            # print(value_inside_start.get())
+            #pylab.rcParams['xtick.major.pad']= '25'
+            
+            fig = Figure(figsize = (12, 6), dpi = 200)
 
-            df_subset = df[("Datetime (UTC)" >= value_inside_start.get()) & ("Datetime (UTC)" <= value_inside_end.get())]
-            print(df_subset)
+            #plt.rc_context({'xtick.major.pad':10})
+            
+            # adding the subplot
+            fig,axes = plt.subplots(1,1, figsize=(6.55, 4.3)) #add_subplots(111)
+            axes.clear()
+            
+            #axes.tick_params(axis='x', which='major', pad=50)
+            
+            #axes.plot(x,y)
+            
+            fig.autofmt_xdate()
+            #axes.plot(x,y)
+            df.groupby('Time').max()['Steps count'].plot()
+            plt.tight_layout()
+            
+            # plotting the graph
+            plt.setp(axes.get_xticklabels(), rotation=30, horizontalalignment='right')
+            #axes.xaxis.set_tick_params(padx=100)
+            fig.tight_layout()
 
-            fig = Figure(figsize=(4, 3.87), dpi=100)
-            plot1 = fig.add_subplot(111)
-            plot1.plot(Date, Mvmt)
-            # loc = plticker.LogLocator(base=2)
-            # plot1.yaxis.set_major_locator(loc)
-            # --** Here is where I am trying to filter based on date **--
-            # plot1.set_xlim(Mvmt[0], Mvmt[20])
-            canvas = FigureCanvasTkAgg(fig, frame_right)
-            canvas.get_tk_widget().grid(row=1, column=1, rowspan=1, columnspan=1)
+            #fig = sns.lineplot(df, x=X, y=Y)
+
+
+            # creating the Tkinter canvas
+            # containing the Matplotlib figure
+
+            canvas = FigureCanvasTkAgg(fig, frame_right)  
+            canvas.draw()
+            canvas.get_tk_widget().grid(row=1, sticky="EW")
+
+            # !!!Not Working!!!
+            # creating the Matplotlib toolbar
+            # toolbar = NavigationToolbar2Tk(canvas, frame_right, pack_toolbar=False)
+            # toolbar.update()
+            # toolbar.pack(anchor="w", fill=tk.X)
+            # canvas.get_tk_widget().pack()
 
         home_button = Button(
             frame_left,
@@ -162,6 +219,7 @@ class Graph(ttk.Frame):
         plot_button = Button(frame_left, text="Graph", command=plot, height=2, width=10)
         plot_button.grid(row=4, column=0, pady=5, sticky="NEW")
 
+        print(max(df['Time']))
 
 class Chart(ttk.Frame):
     def __init__(self, container, controller):
@@ -172,6 +230,13 @@ class Chart(ttk.Frame):
 
         frame_right = Frame(self, padx=50, pady=50, bg="light blue")
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
+
+        df = pd.read_csv('Dataset/20200118/310/summary.csv', index_col=0)
+        del df['Timezone (minutes)']
+        del df['Unix Timestamp (UTC)']
+        df['Temp avg'] = df['Temp avg']
+        df['Movement intensity'] = df['Movement intensity']
+        df['Steps count'] = df['Steps count']
 
         def chart():
             num_rows = int(row_input.get())
@@ -221,9 +286,33 @@ class Chart(ttk.Frame):
         row_input = Entry(frame_left, justify='center')
         row_input.grid(row=3, column=0)
 
-        b = Button(frame_left, command=chart, height=2, width=10, text="Chart")
-        b.grid(row=4, column=0, pady=5)
+        b = Button(frame_left, command=chart, height=2, text="Chart")
+        b.grid(row=4, column=0, pady=5, sticky="EW")
 
+        fun = Label(frame_left, text="Functions")
+        fun.grid(row=5, column=0, padx=0, pady=1, sticky="EW")
+
+        cBox = ttk.Combobox(frame_left, justify=CENTER)
+        cBox['values'] = (
+            'Temp avg',
+            'Movement intensity',
+            'Steps count'
+            )
+        cBox.grid(column=0, row=6, columnspan=1, pady=1, sticky="EW")
+        cBox.current(0)
+
+        m=np.around(max(df['Temp avg']), 3)
+        maxx = Label(frame_left, text=("Max",m))
+        maxx.grid(row=7, column=0, padx=0, pady=5, sticky="EW")
+
+        mead=np.around(np.median(df['Temp avg']), 3)
+        meadian = Label(frame_left, text=("Meadian",mead))
+        meadian.grid(row=8, column=0, padx=0, pady=5, sticky="EW")
+
+        mean=np.around(np.mean(df['Temp avg']), 3)
+        meann = Label(frame_left, text=("Mean",mean))
+        meann.grid(row=9, column=0, padx=0, pady=5, sticky="EW")
+        
 
 root = Graphy()
 root.mainloop()
