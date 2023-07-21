@@ -17,6 +17,7 @@ filepath = 'Dataset/20200118/310/summary.csv'
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
+
 class Graphy(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
