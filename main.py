@@ -139,29 +139,32 @@ class Graph(ttk.Frame):
         frame_right = Frame(self, padx=50, pady=50, bg="light blue")
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
-        df = pd.read_csv(filepath)
-
-        # df["Datetime (UTC)"].head(5)
-
-        df['Date'] = pd.to_datetime(df['Datetime (UTC)'], format='%Y-%m-%dT%Xz')
-        # offset = int(df['Timezone (minutes)'][0])
-        df['Time'] = df['Date'].dt.time
-        df['datetime'] = pd.to_datetime(df['Unix Timestamp (UTC)'], unit='ms')
-        df['datetime_UTC'] = df['datetime'].dt.tz_localize('UTC')
-        # df['datetime (Local)'] = df['datetime'] + pd.DateOffset(minutes=offset)
-        df['datetime (Local)'] = df['datetime'] + pd.DateOffset(hours=5)
-        df['Month'] = df['Date'].dt.month
-        df['Time'] = df['Time'].astype(str)
-        df['Date'] = df['Date'].astype(str)
-        df['datetime (Local)'] = df['datetime (Local)'].astype(str)
-
-        df['Time Local'] = df['Time']
-        df['Time UTC'] = df['datetime (Local)']
-        x_local = df['Time Local']
-        x_utc = df['Time UTC']
-        # y = df['Eda avg']
+        df = pd.read_csv(filepath[filepath.find('Dataset'):])
+        df['Range'] = pd.to_datetime(df['Datetime (UTC)'], format='%Y-%m-%dT%Xz')
 
         def plot():
+            df = pd.read_csv(filepath[filepath.find('Dataset'):])
+
+            # df["Datetime (UTC)"].head(5)
+
+            df['Date'] = pd.to_datetime(df['Datetime (UTC)'], format='%Y-%m-%dT%Xz')
+            # offset = int(df['Timezone (minutes)'][0])
+            df['Time'] = df['Date'].dt.time
+            df['datetime'] = pd.to_datetime(df['Unix Timestamp (UTC)'], unit='ms')
+            df['datetime_UTC'] = df['datetime'].dt.tz_localize('UTC')
+            # df['datetime (Local)'] = df['datetime'] + pd.DateOffset(minutes=offset)
+            df['datetime (Local)'] = df['datetime'] + pd.DateOffset(hours=5)
+            df['Month'] = df['Date'].dt.month
+            df['Time'] = df['Time'].astype(str)
+            df['Date'] = df['Date'].astype(str)
+            df['datetime (Local)'] = df['datetime (Local)'].astype(str)
+
+            df['Time Local'] = df['Time']
+            df['Time UTC'] = df['datetime (Local)']
+            x_local = df['Time Local']
+            x_utc = df['Time UTC']
+            # y = df['Eda avg']
+
             fig = Figure(figsize=(12, 6), dpi=200)
             
             # adding the subplot
@@ -173,6 +176,10 @@ class Graph(ttk.Frame):
             # Aggregation
             if combo.get() == 'Local Time':
                 print(combo.get())
+                print(value_inside_start)
+                # df_subset = df['Time Local'].between(value_inside_start.get(), value_inside_end.get())
+                # df_subset = df[('Time Local' >= value_inside_start.get()) & ('Time Local' <= value_inside_end.get())]
+                # print(df_subset)
                 df.groupby(x_local).max()['Temp avg'].plot()  # df.groupby('Time').max()['Temp avg'].plot()
             else:
                 print(combo.get())
@@ -206,14 +213,19 @@ class Graph(ttk.Frame):
         )
         switch_page_button.grid(column=0, row=1, columnspan=1, pady=5, sticky="NEW")
 
-        value_inside_start = StringVar(frame_left)
-        value_inside_end = StringVar(frame_left)
-        value_inside_start.set(df['Date'][0])
-        value_inside_end.set(df['Date'][20])
-        drop = OptionMenu(frame_left, value_inside_start, *df['Date'])
+        # print(df['Range'][0])
+
+        value_inside_start = StringVar()
+        value_inside_end = StringVar()
+        value_inside_start.set(df['Range'][0])
+        value_inside_end.set(df['Range'][20])
+        drop = OptionMenu(frame_left, value_inside_start, *df['Range'])
         drop.grid(row=2, column=0, sticky="NEW")
-        drop2 = OptionMenu(frame_left, value_inside_end, *df['Date'])
+        drop2 = OptionMenu(frame_left, value_inside_end, *df['Range'])
         drop2.grid(row=3, column=0, pady=1, sticky="NEW")
+
+        print(df['Range'][0])
+        print(value_inside_start.get())
 
         # COMBO BOX FOR UTC/LOCAL TIMEZONES
         time_values = ('UTC', 'Local Time')
@@ -223,15 +235,16 @@ class Graph(ttk.Frame):
         combo.current(0)
         combo.grid(row=4, column=0)
 
-
         def option_selected(event):
             selected_option = combo.get()
             print("You selected:", selected_option)
             if selected_option == 'UTC':
-                x = df['Time']
+                print()
+                # x = df['Time']
                 # print(x)
             if selected_option == 'Local Time':
-                x = df['datetime (Local)']
+                print()
+                # x = df['datetime (Local)']
                 # print(x)
 
         combo.bind("<<ComboboxSelected>>", option_selected)
@@ -239,7 +252,7 @@ class Graph(ttk.Frame):
         plot_button = Button(frame_left, text="Graph", command=plot, height=2, width=10)
         plot_button.grid(row=5, column=0, pady=5, sticky="NEW")
 
-        print(max(df['Time']))
+        # print(max(df['Time']))
 
 
 class Chart(ttk.Frame):
@@ -271,7 +284,7 @@ class Chart(ttk.Frame):
             scroll_h.grid(row=1, column=0, rowspan=1, sticky="EW")
 
             table = Text(frame_right, wrap="none")
-            table.insert(END, str(df.head(num_rows)))
+            table.insert(END, str(df.head(num_rows).to_string()))
             # with open('Dataset/20200118/310/summary.csv', "r") as f:
             #     data = f.read()
             #     table.insert("1.0", data)
