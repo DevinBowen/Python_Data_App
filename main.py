@@ -96,6 +96,8 @@ class Front(ttk.Frame):
 
 class Graph(ttk.Frame):
     def __init__(self, container, controller):
+        startValue = []
+        endValue = []
         super().__init__(container)
 
         frame_left = Frame(self, padx=50, pady=50, bg="light blue")
@@ -106,13 +108,28 @@ class Graph(ttk.Frame):
 
         df = pd.read_csv(filepath[filepath.find('Dataset'):])
         df['Range'] = pd.to_datetime(df['Datetime (UTC)'], format='%Y-%m-%dT%Xz')
+        
+
+        def setStartRange(selection):
+            self.startValue = selection
+
+        def setEndRange(selection):
+            self.endValue = selection
 
         def plot():
             df = pd.read_csv(filepath[filepath.find('Dataset'):])
-
+            #print(df['Range'])
             # df["Datetime (UTC)"].head(5)
 
+            print(self.startValue)
+            print(self.endValue)
+
+
+
             df['Date'] = pd.to_datetime(df['Datetime (UTC)'], format='%Y-%m-%dT%Xz')
+            df = df[(df['Date'] >= self.startValue) & (df['Date'] <= self.endValue)]
+
+
             # offset = int(df['Timezone (minutes)'][0])
             df['Time'] = df['Date'].dt.time
             df['datetime'] = pd.to_datetime(df['Unix Timestamp (UTC)'], unit='ms')
@@ -177,9 +194,13 @@ class Graph(ttk.Frame):
         value_inside_end = StringVar()
         value_inside_start.set(df['Range'][0])
         value_inside_end.set(df['Range'][20])
-        drop = OptionMenu(frame_left, value_inside_start, *df['Range'])
+
+        self.startValue = df['Range'][0]
+        self.endValue = df['Range'][20]
+
+        drop = OptionMenu(frame_left, value_inside_start, *df['Range'], ' ', command= setStartRange)
         drop.grid(row=2, column=0, sticky="NEW")
-        drop2 = OptionMenu(frame_left, value_inside_end, *df['Range'])
+        drop2 = OptionMenu(frame_left, value_inside_end, *df['Range'], ' ', command= setEndRange)
         drop2.grid(row=3, column=0, pady=1, sticky="NEW")
 
         print(df['Range'][0])
