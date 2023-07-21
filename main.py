@@ -18,47 +18,33 @@ from datetime import datetime
 import time
 import datetime
 
+filepath = 'Dataset/20200118/310/summary.csv'
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
-Date = []
-Acc = []
-Eda = []
-Temp = []
-Mvmt = []
-Step = []
-Rest = []
-On = []
-
-
-with open('Dataset/20200118/310/summary.csv', 'r') as csvfile:
-    lines = csv.reader(csvfile, delimiter=',')
-    next(lines)
-    for row in lines:
-        Date.append(row[0])
-        Acc.append(row[3])
-        Eda.append(row[4])
-        Temp.append(row[5])
-        Mvmt.append(row[6])
-        Step.append(row[7])
-        Rest.append(row[8])
-        On.append(row[9])
-
-
-def select_file():
-    filetypes = (
-        ('text files', '*.txt'),
-        ('All files', '*.*')
-    )
-    filename = fd.askopenfilename(
-        title='Open a file',
-        initialdir='/',
-        filetypes=filetypes)
-    # showinfo(
-    #     title='Selected File',
-    #     message=filename
-    # )
+# Date = []
+# Acc = []
+# Eda = []
+# Temp = []
+# Mvmt = []
+# Step = []
+# Rest = []
+# On = []
+#
+#
+# with open('Dataset/20200118/310/summary.csv', 'r') as csvfile:
+#     lines = csv.reader(csvfile, delimiter=',')
+#     next(lines)
+#     for row in lines:
+#         Date.append(row[0])
+#         Acc.append(row[3])
+#         Eda.append(row[4])
+#         Temp.append(row[5])
+#         Mvmt.append(row[6])
+#         Step.append(row[7])
+#         Rest.append(row[8])
+#         On.append(row[9])
 
 
 class Graphy(tk.Tk):
@@ -109,6 +95,28 @@ class Front(ttk.Frame):
         )
         c_button.grid(column=0, row=2, columnspan=1, sticky="EW")
 
+        def select_file():
+            filetypes = (
+                ('CSV files', '*.csv'),
+                ('All files', '*.*')
+            )
+            filepath = fd.askopenfilename(
+                title='Open a file',
+                # initialdir='/',
+                filetypes=filetypes)
+            # showinfo(
+            #     title='Selected File',
+            #     message=filename
+            # )
+            print(filepath)
+
+        change = Button(
+            frame,
+            text="Change File",
+            command=select_file
+        )
+        change.grid(column=0, row=3, pady=5, columnspan=1, sticky="EW")
+
 
 class Graph(ttk.Frame):
     def __init__(self, container, controller):
@@ -120,7 +128,7 @@ class Graph(ttk.Frame):
         frame_right = Frame(self, padx=50, pady=50, bg="light blue")
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
-        df = pd.read_csv('Dataset/20200118/310/summary.csv')
+        df = pd.read_csv(filepath)
         del df['Timezone (minutes)']
         del df['Unix Timestamp (UTC)']
 
@@ -209,17 +217,18 @@ class Graph(ttk.Frame):
 
         value_inside_start = StringVar(frame_left)
         value_inside_end = StringVar(frame_left)
-        value_inside_start.set(Date[0])
-        value_inside_end.set(Date[20])
-        drop = OptionMenu(frame_left, value_inside_start, *Date)
+        value_inside_start.set(df['Date'][0])
+        value_inside_end.set(df['Date'][20])
+        drop = OptionMenu(frame_left, value_inside_start, *df['Date'])
         drop.grid(row=2, column=0, sticky="NEW")
-        drop2 = OptionMenu(frame_left, value_inside_end, *Date)
+        drop2 = OptionMenu(frame_left, value_inside_end, *df['Date'])
         drop2.grid(row=3, column=0, pady=1, sticky="NEW")
 
         plot_button = Button(frame_left, text="Graph", command=plot, height=2, width=10)
         plot_button.grid(row=4, column=0, pady=5, sticky="NEW")
 
         print(max(df['Time']))
+
 
 class Chart(ttk.Frame):
     def __init__(self, container, controller):
@@ -231,7 +240,7 @@ class Chart(ttk.Frame):
         frame_right = Frame(self, padx=50, pady=50, bg="light blue")
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
-        df = pd.read_csv('Dataset/20200118/310/summary.csv', index_col=0)
+        df = pd.read_csv(filepath, index_col=0)
         del df['Timezone (minutes)']
         del df['Unix Timestamp (UTC)']
         df['Temp avg'] = df['Temp avg']
@@ -239,8 +248,9 @@ class Chart(ttk.Frame):
         df['Steps count'] = df['Steps count']
 
         def chart():
+            print(filepath)
             num_rows = int(row_input.get())
-            print(num_rows)
+            # print(num_rows)
 
             scroll = Scrollbar(frame_right, orient="vertical")
             scroll.grid(row=0, column=1, rowspan=1, sticky="NS")
@@ -292,26 +302,36 @@ class Chart(ttk.Frame):
         fun = Label(frame_left, text="Functions")
         fun.grid(row=5, column=0, padx=0, pady=1, sticky="EW")
 
-        cBox = ttk.Combobox(frame_left, justify=CENTER)
-        cBox['values'] = (
-            'Temp avg',
-            'Movement intensity',
-            'Steps count'
-            )
-        cBox.grid(column=0, row=6, columnspan=1, pady=1, sticky="EW")
-        cBox.current(0)
+        def modified(label, text_value):
+            # maxx.configure(text=("Max",m))
+            maxx.configure(text=("Max", np.around(max(df[text_value]),3)))
+            median.configure(text=("Median", np.around(np.median(df[text_value]),3)))
+            meann.configure(text=("Mean", np.around(np.mean(df[text_value]),3)))
+            print(cbox.get())
 
-        m=np.around(max(df['Temp avg']), 3)
-        maxx = Label(frame_left, text=("Max",m))
+        box = StringVar()
+        cbox = ttk.Combobox(frame_left, textvariable=box, justify=CENTER, state='readonly')
+        cbox['values'] = (
+            'Steps count',
+            'Temp avg',
+            'Movement intensity'
+            )
+        cbox.grid(column=0, row=6, columnspan=1, pady=1, sticky="EW")
+        cbox.current(0)
+
+        m = np.around(max(df[cbox.get()]), 3)
+        maxx = Label(frame_left, text=("Max", m))
         maxx.grid(row=7, column=0, padx=0, pady=5, sticky="EW")
 
-        mead=np.around(np.median(df['Temp avg']), 3)
-        meadian = Label(frame_left, text=("Meadian",mead))
-        meadian.grid(row=8, column=0, padx=0, pady=5, sticky="EW")
+        mead = np.around(np.median(df[cbox.get()]), 3)
+        median = Label(frame_left, text=("Median",mead))
+        median.grid(row=8, column=0, padx=0, pady=5, sticky="EW")
 
-        mean=np.around(np.mean(df['Temp avg']), 3)
+        mean = np.around(np.mean(df[cbox.get()]), 3)
         meann = Label(frame_left, text=("Mean",mean))
         meann.grid(row=9, column=0, padx=0, pady=5, sticky="EW")
+
+        cbox.bind('<<ComboboxSelected>>', lambda event: modified(maxx, box.get()))
         
 
 root = Graphy()
