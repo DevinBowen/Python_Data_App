@@ -100,6 +100,7 @@ class Front(ttk.Frame):
                 ('CSV files', '*.csv'),
                 ('All files', '*.*')
             )
+            global filepath
             filepath = fd.askopenfilename(
                 title='Open a file',
                 # initialdir='/',
@@ -117,6 +118,16 @@ class Front(ttk.Frame):
         )
         change.grid(column=0, row=3, pady=5, columnspan=1, sticky="EW")
 
+        def ex():
+            root.quit()
+
+        qu = Button(
+            frame,
+            text="EXIT",
+            command=ex
+        )
+        qu.grid(column=0, row=4, pady=5, columnspan=1, sticky="EW")
+
 
 class Graph(ttk.Frame):
     def __init__(self, container, controller):
@@ -129,76 +140,56 @@ class Graph(ttk.Frame):
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
         df = pd.read_csv(filepath)
-        del df['Timezone (minutes)']
-        del df['Unix Timestamp (UTC)']
 
-        df["Datetime (UTC)"].head(5)
+        # df["Datetime (UTC)"].head(5)
 
         df['Date'] = pd.to_datetime(df['Datetime (UTC)'], format='%Y-%m-%dT%Xz')
-        df['Date'].dt.time
+        # offset = int(df['Timezone (minutes)'][0])
         df['Time'] = df['Date'].dt.time
+        df['datetime'] = pd.to_datetime(df['Unix Timestamp (UTC)'], unit='ms')
+        df['datetime_UTC'] = df['datetime'].dt.tz_localize('UTC')
+        # df['datetime (Local)'] = df['datetime'] + pd.DateOffset(minutes=offset)
+        df['datetime (Local)'] = df['datetime'] + pd.DateOffset(hours=5)
         df['Month'] = df['Date'].dt.month
         df['Time'] = df['Time'].astype(str)
-        x = df['Date']
-        y = df['Eda avg']
+        df['Date'] = df['Date'].astype(str)
+        df['datetime (Local)'] = df['datetime (Local)'].astype(str)
 
-        # def plot():
-        #     # print(value_inside_start.get())
-
-        #     # df_subset = df[("Datetime (UTC)" >= value_inside_start.get()) & ("Datetime (UTC)" <= value_inside_end.get())]
-        #     # print(df_subset)
-
-        #     fig = Figure(figsize=(4, 3.87), dpi=100)
-        #     plot1 = fig.add_subplot(111)
-        #     plot1.plot(Date, Mvmt)
-        #     # loc = plticker.LogLocator(base=2)
-        #     # plot1.yaxis.set_major_locator(loc)
-        #     # --** Here is where I am trying to filter based on date **--
-        #     # plot1.set_xlim(Mvmt[0], Mvmt[20])
-        #     canvas = FigureCanvasTkAgg(fig, frame_right)
-        #     canvas.get_tk_widget().grid(row=1, column=1, rowspan=1, columnspan=1)
+        df['Time Local'] = df['Time']
+        df['Time UTC'] = df['datetime (Local)']
+        x_local = df['Time Local']
+        x_utc = df['Time UTC']
+        # y = df['Eda avg']
 
         def plot():
-            #pylab.rcParams['xtick.major.pad']= '25'
-            
-            fig = Figure(figsize = (12, 6), dpi = 200)
-
-            #plt.rc_context({'xtick.major.pad':10})
+            fig = Figure(figsize=(12, 6), dpi=200)
             
             # adding the subplot
-            fig,axes = plt.subplots(1,1, figsize=(6.55, 4.3)) #add_subplots(111)
-            axes.clear()
-            
-            #axes.tick_params(axis='x', which='major', pad=50)
-            
-            #axes.plot(x,y)
-            
-            fig.autofmt_xdate()
-            #axes.plot(x,y)
-            df.groupby('Time').max()['Steps count'].plot()
-            plt.tight_layout()
-            
+            fig, axes = plt.subplots(1, 1, figsize=(6.55, 4.3)) #add_subplots(111)
+            axes.clear()  # Clears graph so there will be no overlapping.
+
+            fig.autofmt_xdate()  # Formats the datetime
+
+            # Aggregation
+            if combo.get() == 'Local Time':
+                print(combo.get())
+                df.groupby(x_local).max()['Temp avg'].plot()  # df.groupby('Time').max()['Temp avg'].plot()
+            else:
+                print(combo.get())
+                df.groupby(x_utc).max()['Temp avg'].plot()
+
+            # filter 0 values.
+            # df[df['Steps count'] > 0].groupby('Time').count()['Steps count'].step()
+
             # plotting the graph
-            plt.setp(axes.get_xticklabels(), rotation=30, horizontalalignment='right')
-            #axes.xaxis.set_tick_params(padx=100)
-            fig.tight_layout()
-
-            #fig = sns.lineplot(df, x=X, y=Y)
-
+            plt.setp(axes.get_xticklabels(), rotation=30, horizontalalignment='right')  # Set the alignment
+            fig.tight_layout()  # Add spacing for x axis.
 
             # creating the Tkinter canvas
             # containing the Matplotlib figure
-
-            canvas = FigureCanvasTkAgg(fig, frame_right)  
+            canvas = FigureCanvasTkAgg(fig, frame_right)
             canvas.draw()
             canvas.get_tk_widget().grid(row=1, sticky="EW")
-
-            # !!!Not Working!!!
-            # creating the Matplotlib toolbar
-            # toolbar = NavigationToolbar2Tk(canvas, frame_right, pack_toolbar=False)
-            # toolbar.update()
-            # toolbar.pack(anchor="w", fill=tk.X)
-            # canvas.get_tk_widget().pack()
 
         home_button = Button(
             frame_left,
@@ -224,8 +215,29 @@ class Graph(ttk.Frame):
         drop2 = OptionMenu(frame_left, value_inside_end, *df['Date'])
         drop2.grid(row=3, column=0, pady=1, sticky="NEW")
 
+        # COMBO BOX FOR UTC/LOCAL TIMEZONES
+        time_values = ('UTC', 'Local Time')
+        time_string = tk.StringVar()
+        combo = ttk.Combobox(frame_left, textvariable=time_string, state='readonly')
+        combo['values'] = time_values
+        combo.current(0)
+        combo.grid(row=4, column=0)
+
+
+        def option_selected(event):
+            selected_option = combo.get()
+            print("You selected:", selected_option)
+            if selected_option == 'UTC':
+                x = df['Time']
+                # print(x)
+            if selected_option == 'Local Time':
+                x = df['datetime (Local)']
+                # print(x)
+
+        combo.bind("<<ComboboxSelected>>", option_selected)
+
         plot_button = Button(frame_left, text="Graph", command=plot, height=2, width=10)
-        plot_button.grid(row=4, column=0, pady=5, sticky="NEW")
+        plot_button.grid(row=5, column=0, pady=5, sticky="NEW")
 
         print(max(df['Time']))
 
@@ -240,15 +252,16 @@ class Chart(ttk.Frame):
         frame_right = Frame(self, padx=50, pady=50, bg="light blue")
         frame_right.grid(row=0, column=1, padx=10, pady=10, sticky="NSEW")
 
-        df = pd.read_csv(filepath, index_col=0)
-        del df['Timezone (minutes)']
-        del df['Unix Timestamp (UTC)']
-        df['Temp avg'] = df['Temp avg']
-        df['Movement intensity'] = df['Movement intensity']
-        df['Steps count'] = df['Steps count']
-
         def chart():
             print(filepath)
+
+            df = pd.read_csv(filepath[filepath.find('Dataset'):], index_col=0)
+            del df['Timezone (minutes)']
+            del df['Unix Timestamp (UTC)']
+            df['Temp avg'] = df['Temp avg']
+            df['Movement intensity'] = df['Movement intensity']
+            df['Steps count'] = df['Steps count']
+
             num_rows = int(row_input.get())
             # print(num_rows)
 
@@ -303,6 +316,15 @@ class Chart(ttk.Frame):
         fun.grid(row=5, column=0, padx=0, pady=1, sticky="EW")
 
         def modified(label, text_value):
+            print(filepath)
+
+            df = pd.read_csv(filepath[filepath.find('Dataset'):], index_col=0)
+            del df['Timezone (minutes)']
+            del df['Unix Timestamp (UTC)']
+            df['Temp avg'] = df['Temp avg']
+            df['Movement intensity'] = df['Movement intensity']
+            df['Steps count'] = df['Steps count']
+
             # maxx.configure(text=("Max",m))
             maxx.configure(text=("Max", np.around(max(df[text_value]),3)))
             median.configure(text=("Median", np.around(np.median(df[text_value]),3)))
@@ -317,18 +339,18 @@ class Chart(ttk.Frame):
             'Movement intensity'
             )
         cbox.grid(column=0, row=6, columnspan=1, pady=1, sticky="EW")
-        cbox.current(0)
+        # cbox.current(0)
 
-        m = np.around(max(df[cbox.get()]), 3)
-        maxx = Label(frame_left, text=("Max", m))
+        # m = np.around(max(df[cbox.get()]), 3)
+        maxx = Label(frame_left, text=("Max"))
         maxx.grid(row=7, column=0, padx=0, pady=5, sticky="EW")
 
-        mead = np.around(np.median(df[cbox.get()]), 3)
-        median = Label(frame_left, text=("Median",mead))
+        # mead = np.around(np.median(df[cbox.get()]), 3)
+        median = Label(frame_left, text=("Median"))
         median.grid(row=8, column=0, padx=0, pady=5, sticky="EW")
 
-        mean = np.around(np.mean(df[cbox.get()]), 3)
-        meann = Label(frame_left, text=("Mean",mean))
+        # mean = np.around(np.mean(df[cbox.get()]), 3)
+        meann = Label(frame_left, text=("Mean"))
         meann.grid(row=9, column=0, padx=0, pady=5, sticky="EW")
 
         cbox.bind('<<ComboboxSelected>>', lambda event: modified(maxx, box.get()))
